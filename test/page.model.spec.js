@@ -9,7 +9,16 @@ chai.use(spies);
 
 
 describe('Page model', function () {
+  before(function(done){
+    return index.User.sync({force: true})
+    .then(function(){
+      return index.Page.sync({force:true})
 
+    })
+    .then(function(){
+      done(); 
+    })
+  })
   
 
   describe('Virtuals', function () {
@@ -46,7 +55,7 @@ describe('Page model', function () {
     describe('renderedContent', function () {
       it('converts the markdown-formatted content into HTML',function() {
    
-        console.log("GUUUUUUUUUUU");
+        
         expect(page.renderedContent).to.equal(marked(page.content));
     });
   });
@@ -59,24 +68,39 @@ describe('Page model', function () {
 //**************END OF VIRTUAL 
 
   describe('Class methods', function (){
-    beforeEach(function (done) {
-    var page = index.Page.create({
+    var page;
+    before(function (done) {
+    index.Page.create({ //instanvr
       title: 'foo',
       content: 'bar',
       tags: ['foo', 'bar']
     })
-    .then(function () {
-      done();
-    })
-    .catch(done);
-  });
+    /*
+      page = index.Page.build({ //doesnt interact with db
+        title: 'foo',
+        content: 'bar',
+        tags: ['foo', 'bar']
+      })
+      page.save() //now becomes async-WHEN INTERACTING WITH DB
+    */
+    .then(function(page){
+      page = page; 
+        done();
+      })
+   
+    });
+
+    //after eah
 
   describe('findByTag', function () {
     
     
     it('gets pages with the search tag', function (done) {
-      page.findByTag('bar')
+     
+      
+      index.Page.findByTag('bar')
       .then(function (pages) {
+      console.log(pages,"HIIIIIIIIII")
       expect(pages).to.have.lengthOf(1);
       done();
     })
@@ -84,8 +108,9 @@ describe('Page model', function () {
     });
 
     it('does not get pages without the search tag', function (done) {
-      page.findByTag('falafel')
+      index.Page.findByTag('falafel')
       .then(function (pages) {
+      console.log(pages,"HIIIII")
       expect(pages).to.have.lengthOf(0);
       done();
     })
